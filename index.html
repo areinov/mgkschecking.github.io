@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мониторинг практики МГКС</title>
+    <style>
+        :root {
+            --neon-orange: #ff6600;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --dark-bg: #121212;
+        }
+
+     body {
+    background: 
+        /* Тонкие линии под 45 градусов */
+        linear-gradient(45deg, transparent 49.5%, rgba(80, 70, 51, 0.4) 10%, transparent 50.5%),
+        /* Тонкие линии под -45 градусов */
+        linear-gradient(-45deg, transparent 49.5%, rgba(109, 104, 94, 0.4) 10%, transparent 50.5%),
+        /* Твой оригинальный фон */
+        radial-gradient(circle at center, #2c2c2c, #000000);
+
+    /* Размер ромбов (можно менять) */
+    background-size: 50px 50px, 50px 50px, 100% 100%;
+    
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+        .glass-card {
+            position: relative;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 40px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { 
+            color: var(--neon-orange); 
+            text-shadow: 0 0 15px var(--neon-orange);
+            font-size: 1.6rem;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+            cursor: pointer;
+        }
+
+        .hidden { display: none; }
+
+        select, button, input {
+            width: 100%;
+            padding: 14px;
+            margin: 12px 0;
+            border-radius: 12px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: 1px solid var(--neon-orange);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        select option { background: #333; }
+
+        button {
+            border: 1px solid var(--neon-orange);
+            text-transform: uppercase;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--neon-orange);
+            box-shadow: 0 0 20px var(--neon-orange);
+            transform: scale(1.02);
+        }
+
+        button:disabled {
+            opacity: 0.15;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .status-btn { background: rgba(255, 102, 0, 0.05); }
+
+        .master-table-container {
+            width: 95%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .master-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .master-table th {
+            position: sticky;
+            top: 0;
+            background: #1a1a1a;
+            padding: 12px;
+            border-bottom: 2px solid var(--neon-orange);
+        }
+
+        .master-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        #current-status {
+            font-weight: bold;
+            display: block;
+            margin: 10px 0;
+            font-size: 1.1rem;
+            color: var(--neon-orange);
+        }
+
+        #lock-msg {
+            margin-top: 15px;
+            font-size: 0.75rem;
+            color: #ffaa77;
+            background: rgba(255, 102, 0, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+/* Блок соцсетей */
+.social-box {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+
+    width: 100px;
+    height: 60px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+.social-box svg {
+    width: 22px;
+    height: 22px;
+    fill: rgba(255, 255, 255, 0.7);
+    transition: 0.3s;
+}
+
+.social-box a:hover svg {
+    fill: var(--neon-orange);
+    transform: scale(1.15);
+}
+
+.social-link svg {
+    width: 28px;
+    height: 28px;
+    fill: rgba(255, 255, 255, 0.6); /* Цвет иконок */
+    transition: all 0.3s ease;
+}
+
+.social-link:hover svg {
+    fill: var(--neon-orange); /* Оранжевый при наведении */
+    filter: drop-shadow(0 0 8px var(--neon-orange));
+    transform: translateY(-3px);
+}
+
+        
+    </style>
+</head>
+<body>
+    
+    <div class="social-box">
+    <a href="https://www.tiktok.com/@college_stroiteley" target="_blank" class="social-link">
+        <svg viewBox="0 0 448 512">
+            <path d="M448,209.91a210.06,210.06,0,0,1-122.77-39.25V349.38A162.55,162.55,0,1,1,185,188.31V278.2a74.62,74.62,0,1,0,52.23,71.18V0l88,0a121.18,121.18,0,0,0,1.86,22.17h0A122.18,122.18,0,0,0,381,102.39a121.43,121.43,0,0,0,67,20.14Z"/>
+        </svg>
+    </a>
+
+    <a href="https://t.me/mozyrskiylitseistroitelei" target="_blank" class="social-link">
+        <svg viewBox="0 0 496 512">
+            <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm121.8 169.9l-40.7 191.8c-3 13.6-11.1 16.9-22.4 10.5l-62-45.7-29.9 28.8c-3.3 3.3-6.1 6.1-12.5 6.1l4.4-63.1 114.9-103.8c5-4.4-1.1-6.9-7.7-2.5l-142 89.4-61.2-19.1c-13.3-4.2-13.6-13.3 2.8-19.7l239.1-92.2c11.1-4 20.8 2.7 17.2 19.5z"/>
+        </svg>
+    </a>
+</div>
+
+    <!-- ЭКРАН 1: АВТОРИЗАЦИЯ -->
+    <div id="auth-screen" class="glass-card">
+        <h1 onclick="openPassScreen('master')">ПРАКТИКА 2026<br>ОСР-331</h1>
+        <select id="user-select">
+            <option value="" disabled selected>Как вас зовут?</option>
+            <option value="Александров Алекс">Александров Алекс</option>
+            <option value="Борисов Борис">Борисов Борис</option>
+            <option value="Викторов Виктор">Викторов Виктор</option>
+        </select>
+        <button onclick="login()">Войти в систему</button>
+    </div>
+    <!-- ЭКРАН 2: ПУЛЬТ СТУДЕНТА -->
+    <div id="student-screen" class="glass-card hidden">
+        <h2 id="welcome-msg">Привет!</h2>
+        <p>Ваш статус на сегодня:</p>
+        <span id="current-status">Синхронизация...</span>
+        
+        <button class="status-btn" onclick="updateStatus('На работе')">🚀 На работе</button>
+        <button class="status-btn" onclick="updateStatus('В пути')">🚌 В пути</button>
+        <button class="status-btn" onclick="updateStatus('Не на работе')">🏠 Не на работе</button>
+        
+        <div id="lock-msg" class="hidden">Вы на работе! Статус зафиксирован до завтра.</div>
+        <p style="margin-top: 40px; font-size: 0.6em; opacity: 0.3; cursor: pointer;" onclick="openPassScreen('reset')">Сброс пользователя</p>
+    </div>
+
+    <!-- ЭКРАН 3: ВВОД ПАРОЛЯ -->
+    <div id="password-screen" class="glass-card hidden">
+        <h1 id="pass-title">ДОСТУП</h1>
+        <input type="password" id="master-pass-input" placeholder="Введите пароль">
+        <button onclick="checkPassword()">Подтвердить</button>
+        <button style="border:none; background:none; font-size:0.8rem; color:grey;" onclick="closePassScreen()">Отмена</button>
+    </div>
+
+    <!-- ЭКРАН 4: ПАНЕЛЬ МАСТЕРА -->
+    <div id="master-screen" class="glass-card master-table-container hidden">
+        <h1>МОНИТОРИНГ ГРУППЫ</h1>
+        <table class="master-table">
+            <thead>
+                <tr><th>Студент</th><th>Статус</th><th>Дата и Время</th></tr>
+            </thead>
+            <tbody id="master-list"></tbody>
+        </table>
+        <button style="margin-top: 20px;" onclick="location.reload()">Выход</button>
+    </div>
+
+    <script>
+        const API_URL = "https://sheetdb.io/api/v1/t5y05xp1pfs2s"; 
+        const MASTER_PASS = "1234"; 
+        let currentUser = "";
+        let passTarget = ""; // 'master' или 'reset'
+
+        window.onload = function() {
+            const savedUser = localStorage.getItem('my_practice_user');
+            if (savedUser) {
+                currentUser = savedUser;
+                showStudentPanel();
+            }
+        };
+
+        // Функции управления экраном пароля
+        function openPassScreen(target) {
+            passTarget = target;
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('student-screen').classList.add('hidden');
+            document.getElementById('password-screen').classList.remove('hidden');
+            document.getElementById('master-pass-input').value = "";
+            document.getElementById('master-pass-input').focus();
+        }
+
+        function closePassScreen() {
+            document.getElementById('password-screen').classList.add('hidden');
+            if (currentUser) {
+                document.getElementById('student-screen').classList.remove('hidden');
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
+        }
+
+        function checkPassword() {
+            const input = document.getElementById('master-pass-input').value;
+            if (input === MASTER_PASS) {
+                if (passTarget === 'master') {
+                    showMaster();
+                } else {
+                    localStorage.clear();
+                    location.reload();
+                }
+            } else {
+                alert("Неверный пароль!");
+            }
+        }
+
+        async function login() {
+            const select = document.getElementById('user-select');
+            if(!select.value) return alert("Выберите имя!");
+            currentUser = select.value;
+            localStorage.setItem('my_practice_user', currentUser);
+            showStudentPanel();
+        }
+
+        function checkDailyLock() {
+            const lastLockDate = localStorage.getItem('last_lock_date');
+            const now = new Date();
+            const today = now.toLocaleDateString('ru-RU', {
+                day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Minsk'
+            });
+            
+            if (lastLockDate === today) {
+                document.querySelectorAll('.status-btn').forEach(b => b.disabled = true);
+                document.getElementById('lock-msg').classList.remove('hidden');
+                return true;
+            }
+            return false;
+        }
+
+        async function showStudentPanel() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('password-screen').classList.add('hidden');
+            document.getElementById('student-screen').classList.remove('hidden');
+            document.getElementById('welcome-msg').innerText = currentUser;
+            const statusLabel = document.getElementById('current-status');
+            
+            checkDailyLock();
+
+            try {
+                const response = await fetch(`${API_URL}/search?name=${encodeURIComponent(currentUser)}`);
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    let cleanTime = data[0].time ? data[0].time.replace("'", "") : "--:--";
+                    statusLabel.innerText = `${data[0].status} (${cleanTime})`;
+                } else {
+                    statusLabel.innerText = "Ещё не отмечался";
+                }
+            } catch (e) { statusLabel.innerText = "Ошибка синхронизации"; }
+        }
+
+        async function updateStatus(newStatus) {
+            if (newStatus === 'На работе') {
+                if (!confirm(`Вы подтверждаете прибытие?\nИзменить статус сегодня будет нельзя!`)) return;
+            }
+
+            const statusLabel = document.getElementById('current-status');
+            statusLabel.innerText = "Отправка...";
+            
+            const now = new Date();
+            const datePart = now.toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', timeZone:'Europe/Minsk'});
+            const lockDate = now.toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric', timeZone:'Europe/Minsk'});
+            const timePart = now.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit', timeZone:'Europe/Minsk'});
+            
+            const dateTimeStr = `'${datePart} | ${timePart}`; 
+
+            try {
+                const checkRes = await fetch(`${API_URL}/search?name=${encodeURIComponent(currentUser)}`);
+                const existingData = await checkRes.json();
+                const payload = { "status": newStatus, "time": dateTimeStr };
+
+                if (existingData && existingData.length > 0) {
+                    await fetch(`${API_URL}/name/${encodeURIComponent(currentUser)}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ "data": payload })
+                    });
+                } else {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ "data": [{ "name": currentUser, ...payload }] })
+                    });
+                }
+                
+                if (newStatus === 'На работе') {
+                    localStorage.setItem('last_lock_date', lockDate);
+                    checkDailyLock();
+                }
+
+                statusLabel.innerText = `${newStatus} (${datePart} | ${timePart})`;
+                alert("Статус обновлен!");
+            } catch (e) { 
+                alert("Ошибка сети!"); 
+                statusLabel.innerText = "Ошибка"; 
+            }
+        }
+
+        async function showMaster() {
+            document.getElementById('password-screen').classList.add('hidden');
+            document.getElementById('master-screen').classList.remove('hidden');
+            const list = document.getElementById('master-list');
+            list.innerHTML = "<tr><td colspan='3'>Синхронизация...</td></tr>";
+
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                list.innerHTML = "";
+                data.sort((a,b) => a.name.localeCompare(b.name)).forEach(row => {
+                    let cleanTime = row.time ? row.time.replace("'", "") : "—";
+                    list.innerHTML += `<tr><td>${row.name}</td><td style="color:var(--neon-orange); font-weight:bold;">${row.status}</td><td style="font-size:0.8em; opacity:0.7">${cleanTime}</td></tr>`;
+                });
+            } catch (e) { list.innerHTML = "Ошибка загрузки"; }
+        }
+    </script>
+</body>
+</html>
