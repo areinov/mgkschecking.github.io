@@ -33,6 +33,49 @@
     overflow-x: hidden;
 }
 
+/* Контейнер, который не дает гифке влиять на центровку блоков */
+.gif-side-container {
+    position: fixed;
+    left: 20px; /* Отступ от левого края экрана */
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    pointer-events: none; /* Чтобы можно было кликать "сквозь" гифку */
+}
+
+.main-gif {
+    width: 250px; /* Твой размер */
+    height: auto;
+    mix-blend-mode: screen;
+}
+
+/* Центровка основного контента (проверь, что в body это есть) */
+body {
+    display: flex;
+    justify-content: center; /* Центрирует карточку по горизонтали */
+    align-items: center;     /* Центрирует карточку по вертикали */
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* Адаптация: на телефонах гифка уходит наверх, чтобы не мешать центру */
+@media (max-width: 1100px) {
+    .gif-side-container {
+        position: relative;
+        left: 0;
+        top: 0;
+        transform: none;
+        margin-bottom: -80px; /* Прижимаем к карточке сверху */
+        text-align: center;
+    }
+    .main-gif {
+        width: 150px;
+    }
+}
+
+
+
+
         .glass-card {
             position: relative;
             background: var(--glass-bg);
@@ -197,6 +240,15 @@
     </style>
 </head>
 <body>
+    
+    <body>
+    <!-- Просто тег без оберток, чтобы стили точно сработали -->
+    <img src="https://i.gifer.com/bfR.gif" class="main-gif">
+</body>
+
+    
+
+
     
     <div class="social-box">
     <a href="https://www.tiktok.com/@college_stroiteley" target="_blank" class="social-link">
